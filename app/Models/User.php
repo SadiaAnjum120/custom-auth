@@ -47,7 +47,14 @@ class User extends Authenticatable implements MustVerifyEmailContract
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-         'is_active' => 'boolean',
+        'is_active' => 'boolean',
     ];
+
+    /**
+     * Full name (first_name + last_name).
+     */
+    public function getNameAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->last_name}");
+    }
 }
-// ...existing code...
