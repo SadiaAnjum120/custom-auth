@@ -9,10 +9,7 @@ use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+    /** All profile routes are protected by the 'auth' middleware in the route group. */
 
     /**
      * Show the user profile (view only).
