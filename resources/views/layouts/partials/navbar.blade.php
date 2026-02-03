@@ -169,7 +169,7 @@
                           <span class="dropdown-shortcuts-icon rounded-circle mb-3">
                             <i class="icon-base ti tabler-settings icon-26px text-heading"></i>
                           </span>
-                          <a href="pages-account-settings-account.html" class="stretched-link">Setting</a>
+                          <a href="{{ route('profile.settings') }}" class="stretched-link">Setting</a>
                           <small>Account Settings</small>
                         </div>
                       </div>
@@ -459,16 +459,16 @@
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                      <a class="dropdown-item mt-0" href="pages-account-settings-account.html">
+                      <a class="dropdown-item mt-0" href="{{ route('profile') }}">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0 me-2">
                             <div class="avatar avatar-online">
-                              <img src="../../assets/img/avatars/1.png" alt class="rounded-circle" />
+                              <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="rounded-circle" />
                             </div>
                           </div>
                           <div class="flex-grow-1">
-                            <h6 class="mb-0">John Doe</h6>
-                            <small class="text-body-secondary">Admin</small>
+                            <h6 class="mb-0">{{ auth()->user()->name ?? 'User' }}</h6>
+                            <small class="text-body-secondary">Account</small>
                           </div>
                         </div>
                       </a>
@@ -477,13 +477,13 @@
                       <div class="dropdown-divider my-1 mx-n2"></div>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="pages-profile-user.html">
+                      <a class="dropdown-item" href="{{ route('profile') }}">
                         <i class="icon-base ti tabler-user me-3 icon-md"></i
                         ><span class="align-middle">My Profile</span>
                       </a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="pages-account-settings-account.html">
+                      <a class="dropdown-item" href="{{ route('profile.settings') }}">
                         <i class="icon-base ti tabler-settings me-3 icon-md"></i
                         ><span class="align-middle">Settings</span>
                       </a>
@@ -516,10 +516,13 @@
                     </li>
                     <li>
                       <div class="d-grid px-2 pt-2 pb-1">
-                        <a class="btn btn-sm btn-danger d-flex" href="auth-login-cover.html" target="_blank">
-                          <small class="align-middle">Logout</small>
-                          <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
-                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                          @csrf
+                          <button type="submit" class="btn btn-sm btn-danger d-flex w-100">
+                            <small class="align-middle">Logout</small>
+                            <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
+                          </button>
+                        </form>
                       </div>
                     </li>
                   </ul>
