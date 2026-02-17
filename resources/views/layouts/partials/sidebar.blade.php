@@ -42,37 +42,49 @@
 
           <ul class="menu-inner py-1">
             <!-- Dashboards -->
-            <li class="menu-item active open">
-              <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-smart-home"></i>
-                <div data-i18n="Dashboards">Dashboards</div>
-                <div class="badge text-bg-danger rounded-pill ms-auto">5</div>
-              </a>
-              <ul class="menu-sub">
-                <li class="menu-item active">
-                  <a href="index.html" class="menu-link">
-                    <div data-i18n="Analytics">Analytics</div>
-                  </a>
-                </li>
-                <li class="menu-item">
-                  <a href="dashboards-crm.html" class="menu-link">
-                    <div data-i18n="CRM">CRM</div>
-                  </a>
-                </li>
-                <li class="menu-item">
-                  <a href="app-ecommerce-dashboard.html" class="menu-link">
-                    <div data-i18n="eCommerce">eCommerce</div>
-                  </a>
-                </li>
-                <li class="menu-item">
-                  <a href="app-logistics-dashboard.html" class="menu-link">
-                    <div data-i18n="Logistics">Logistics</div>
-                  </a>
-                </li>
-                <li class="menu-item">
-                  <a href="app-academy-dashboard.html" class="menu-link">
-                    <div data-i18n="Academy">Academy</div>
-                  </a>
-                </li>
+            <li class="menu-item {{ request()->routeIs('dashboard') ? 'active open' : '' }}">
+  <a href="#" class="menu-link">
+    <i class="menu-icon icon-base ti tabler-smart-home"></i>
+    <div>Dashboards</div>
+  </a>
+</li>
+
+
+<li class="menu-item 
+{{ request()->routeIs('category.*') || request()->routeIs('subcategory.*') || request()->routeIs('product.*') ? 'active open' : '' }}">
+
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon icon-base ti tabler-shopping-cart"></i>
+    <div>eCommerce</div>
+  </a>
+
+  <ul class="menu-sub">
+
+    <!-- Category -->
+    <li class="menu-item {{ request()->routeIs('category.*') ? 'active' : '' }}">
+      <a href="{{ route('category.index') }}" class="menu-link">
+        <div>Category</div>
+      </a>
+    </li>
+
+    <!-- SubCategory -->
+    <li class="menu-item {{ request()->routeIs('subcategory.*') ? 'active' : '' }}">
+      <a href="{{ route('subcategory.index') }}" class="menu-link">
+        <div>Sub Category</div>
+      </a>
+    </li>
+
+    <!-- Product -->
+    <li class="menu-item {{ request()->routeIs('product.*') ? 'active' : '' }}">
+      <a href="{{ route('product.index') }}" class="menu-link">
+        <div>Product</div>
+      </a>
+    </li>
+
+  </ul>
+</li>
+
+
               </ul>
             </li>
+        </aside>

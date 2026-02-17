@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Models;
+use App\Models\Product;
+
+
+use Illuminate\Database\Eloquent\Model;
+
+class SubCategory extends Model
+{
+    protected $fillable = [
+         'user_id',
+        'category_id',
+        'name',
+        'slug',
+        'is_active',
+    ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+    public function products()
+{
+    return $this->hasMany(Product::class);
+}
+}

@@ -27,6 +27,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'is_active',
         'password',
         'remember_token',
+         'is_admin',
     ];
 
     /**
