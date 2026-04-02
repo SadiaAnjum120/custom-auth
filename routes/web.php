@@ -10,49 +10,38 @@ use App\Http\Controllers\Admin\SuperAdminController;
 // Public
 // ----------------------
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', fn () => view('welcome'))->name('home');
 
 // ----------------------
-// Auth: Register / Signup
+// Auth (guest only: login, register, forgot, reset)
 // ----------------------
 
-Route::get('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/register', [AuthController::class, 'store'])->name('register.store');
+Route::middleware('guest')->controller(AuthController::class)->group(function () {
+    // Register / Signup
+    Route::get('/register', 'register')->name('register');
+    Route::post('/register', 'store')->name('register.store');
+
+    // Login
+    Route::get('/login', 'login')->name('login');
+    Route::post('/login', 'loginSubmit')->name('login.submit');
+
+    // Forgot password
+    Route::get('/forgot', 'forgot')->name('forgot');
+    Route::post('/forgot', 'sendResetLink')->name('password.email');
+
+    // Reset password (form + submit)
+    Route::get('/reset-password/{token}', 'resetForm')->name('password.reset');
+    Route::post('/reset-password', 'resetPassword')->name('password.update');
+});
 
 // ----------------------
-// Auth: Login / Logout
+// Auth (authenticated: logout)
 // ----------------------
 
-Route::get('/login', [AuthController::class, 'login'])
-    ->middleware('guest')
-    ->name('login');
-
-Route::post('/login', [AuthController::class, 'loginSubmit'])
-    ->middleware('guest')
-    ->name('login.submit');
-
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
+Route::middleware('auth')->post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ----------------------
-// Auth: Forgot password
-// ----------------------
-
-Route::get('/forgot', [AuthController::class, 'forgot'])
-    ->middleware('guest')
-    ->name('forgot');
-
-Route::post('/forgot', [AuthController::class, 'sendResetLink'])
-    ->name('password.email');
-
-Route::get('/reset-password/{token}', [AuthController::class, 'resetForm'])->name('password.reset');
-Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
-
-// ----------------------
-// Auth: Email verification
+// Email verification (signed link)
 // ----------------------
 
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
@@ -60,14 +49,14 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->name('verification.verify');
 
 // ----------------------
-// Profile (auth required)
+// Profile (auth required, grouped controller)
 // ----------------------
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-    Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+Route::middleware('auth')->controller(ProfileController::class)->group(function () {
+    Route::get('/profile', 'show')->name('profile');
+    Route::get('/profile/settings', 'edit')->name('profile.settings');
+    Route::put('/profile', 'update')->name('profile.update');
+    Route::put('/profile/password', 'updatePassword')->name('profile.password.update');
 });
 Route::controller(CategoryController::class)->middleware('auth')->prefix('category')->group(function () {
     Route::get('/', 'index')->name('category.index');
