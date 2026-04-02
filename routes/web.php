@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Admin\SuperAdminController;
 
 // ----------------------
 // Public
@@ -100,5 +101,56 @@ Route::controller(ProductController::class)->middleware('auth')->prefix('product
     Route::get('/edit/{id}', 'edit')->name('product.edit');
     Route::put('/update/{id}', 'update')->name('product.update');
     Route::delete('/delete/{id}', 'destroy')->name('product.destroy');
+        Route::get('/subcategories/{categoryId}', 'getSubCategoriesByCategory')->name('product.subcategories');
+
+});
+
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+
+    Route::get('/shops', [SuperAdminController::class, 'index'])->name('shops.index');
+
+    Route::post('/shops/approve/{id}', [SuperAdminController::class, 'approve'])->name('shops.approve');
+
+    Route::post('/shops/reject/{id}', [SuperAdminController::class, 'reject'])->name('shops.reject');
+
+    Route::post('/shops/suspend/{id}', [SuperAdminController::class, 'suspend'])->name('shops.suspend');
+
+});
+use App\Http\Controllers\CustomerController;
+Route::middleware('auth')->group(function () {
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customer.index');
+    Route::post('/customers/store', [CustomerController::class, 'store'])->name('customer.store');
+    Route::get('/customers/edit/{id}', [CustomerController::class, 'edit'])->name('customer.edit');
+    Route::put('/customers/update/{id}', [CustomerController::class, 'update'])->name('customer.update');
+    Route::delete('/customers/destroy/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
+});
+
+use App\Http\Controllers\OrdersController;
+
+// ==========================
+// ORDERS ROUTES
+// ==========================
+Route::middleware(['auth'])->group(function () {
+
+    // Orders list page
+    Route::get('/orders', [OrdersController::class, 'index'])->name('orders.index');
+
+    // AJAX: Get subcategories by category
+    Route::get('/sub-categories/{categoryId}', [OrdersController::class, 'getSubCategoriesByCategory']);
+
+    // AJAX: Get products by subcategory
+    Route::get('/products/{subCategoryId}', [OrdersController::class, 'getProductsBySubCategory']);
+
+    // Store new order
+    Route::post('/orders/store', [OrdersController::class, 'store'])->name('orders.store');
+
+    // Edit order (AJAX)
+    Route::get('/orders/edit/{order}', [OrdersController::class, 'edit'])->name('orders.edit');
+
+    // Update order
+    Route::put('/orders/update/{order}', [OrdersController::class, 'update'])->name('orders.update');
+
+    // Delete order
+    Route::delete('/orders/delete/{order}', [OrdersController::class, 'destroy'])->name('orders.destroy');
 
 });

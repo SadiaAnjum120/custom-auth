@@ -10,6 +10,7 @@
   data-template="vertical-menu-template">
 
 
+
   <body>
 
 <head>
@@ -64,7 +65,8 @@
     <!-- Helpers -->
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-
+<!-- Toastr CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
     <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
 
@@ -80,13 +82,22 @@
   </div>
 
 
+<!-- jQuery (must be before Toastr) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Blade page scripts -->
+
+
+
+
 
 
 
    <!-- Core JS -->
     <!-- build:js assets/vendor/js/theme.js  -->
 
-    <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
@@ -109,12 +120,34 @@
     <script src="{{ asset('assets/vendor/libs/@form-validation/bootstrap5.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/@form-validation/auto-focus.js') }}"></script>
 
+
     <!-- Main JS -->
 
     <script src="{{ asset('assets/js/main.js') }}"></script>
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/pages-auth.js') }}"></script>
+    <script>
+$(document).ready(function() {
+
+    @if(Session::has('success'))
+        toastr.success("{{ session('success') }}");
+    @endif
+
+    @if(Session::has('error'))
+        toastr.error("{{ session('error') }}");
+    @endif
+
+    @if(Session::has('warning'))
+        toastr.warning("{{ session('warning') }}");
+    @endif
+
+    @if(Session::has('info'))
+        toastr.info("{{ session('info') }}");
+    @endif
+
+});
+</script>
   </body>
 </html>
 

@@ -8,47 +8,50 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class SubCategoryController extends Controller
+class SubCategoryController extends BaseController
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        parent::__construct(); // BaseController ka constructor call hoga
+        $this->middleware('auth'); // auth check
     }
-
-    
     // INDEX (Only Logged-in User Data)
-    
     public function index()
-{
-    if (auth()->user()->is_admin) {
+    {
+        // Block unapproved shop admins
 
-        // Admin sees ALL data
-        $categories = Category::where('is_active', 1)->get();
 
-        $subCategories = SubCategory::with('category')->get();
 
-    } else {
+        $user = auth()->user();
 
-        // Normal user sees only own data
-        $categories = Category::where('user_id', auth()->id())
-                        ->where('is_active', 1)
-                        ->get();
+ if ($user->is_admin == 1)  {
 
-        $subCategories = SubCategory::with('category')
-                            ->where('user_id', auth()->id())
-                            ->get();
+            $categories = Category::where('is_active', 1)->get();
+            $subCategories = SubCategory::with('category')->get();
+        } else {
+            // Normal user sees only own data
+            $categories = Category::where('user_id', auth()->id())
+                ->where('is_active', 1)
+                ->get();
+
+            $subCategories = SubCategory::with('category')
+                ->where('user_id', auth()->id())
+                ->get();
+        }
+
+        return view('sub-category.index', compact('subCategories','categories'));
     }
 
-    return view('sub-category.index', compact('subCategories','categories'));
-}
+
 
     // STORE NEW SUBCATEGORY
-
     public function store(Request $request)
     {
+
+
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
-            'name'        => 'required|string|max:255',
+            'name'        => 'required|string|max:255|unique:sub_categories,name',
             'is_active'   => 'required|in:0,1',
         ]);
 
@@ -64,18 +67,20 @@ class SubCategoryController extends Controller
         }
     }
 
-    // GET LATEST SUBCATEGORIES TABLE
-    
-    private function getLatestSubCategory($success = true, $message = 'Sub Category Saved successfully!', $html = null)
+    // GET LATEST SUBCATEGORIES TABLE (AJAX)
+    private function getLatestSubCategory($success = true, $message = 'Sub Category saved successfully!', $html = null)
     {
-        if (auth()->user()->is_admin) {
+
+        $user = auth()->user();
+
+ if ($user->is_admin == 1) {
             $subCategories = SubCategory::with('category')->get();
         } else {
-        $subCategories = SubCategory::with('category')
-
-                            ->where('user_id', auth()->id())
-                            ->get();
+            $subCategories = SubCategory::with('category')
+                ->where('user_id', auth()->id())
+                ->get();
         }
+
         if ($html === null) {
             $html = view('sub-category.data-table', compact('subCategories'))->render();
         }
@@ -87,15 +92,19 @@ class SubCategoryController extends Controller
         ]);
     }
 
-    
     // EDIT SUBCATEGORY
     public function edit($id)
     {
-        if (auth()->check() && auth()->user()->is_admin) {
+
+
+        $user = auth()->user();
+
+        if ($user->is_admin == 1) {
             $subCategory = SubCategory::with('category')->findOrFail($id);
         } else {
-        $subCategory = SubCategory::where('user_id', auth()->id())
-                            ->findOrFail($id);
+            $subCategory = SubCategory::with('category')
+                ->where('user_id', auth()->id())
+                ->findOrFail($id);
         }
 
         return response()->json([
@@ -107,16 +116,22 @@ class SubCategoryController extends Controller
     // UPDATE SUBCATEGORY
     public function update(Request $request, $id)
     {
+
+
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name'        => 'required|string|max:255',
             'is_active'   => 'required|in:0,1',
         ]);
-        if (auth()->check() && auth()->user()->is_admin) {
+
+
+        $user = auth()->user();
+
+ if ($user->is_admin == 1)  {
             $subCategory = SubCategory::findOrFail($id);
         } else {
-        $subCategory = SubCategory::where('user_id', auth()->id())
-                            ->findOrFail($id);
+            $subCategory = SubCategory::where('user_id', auth()->id())
+                ->findOrFail($id);
         }
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -130,38 +145,29 @@ class SubCategoryController extends Controller
         }
     }
 
-    
     // DELETE SUBCATEGORY
-    
-   public function destroy($id)
-{
-    if (auth()->check() && auth()->user()->is_admin) {
-        // Admin can delete any sub-category
-        $subCategory = SubCategory::findOrFail($id);
-        $deleted = $subCategory->delete();
-
-        // Reload all sub-categories for admin
-        $subCategories = SubCategory::with('category')->get();
-    } else {
-        // Normal user can delete only their own sub-category
-        $subCategory = SubCategory::where('user_id', auth()->id())->findOrFail($id);
-        $deleted = $subCategory->delete();
-
-        // Reload only user's sub-categories
-        $subCategories = SubCategory::with('category')
-                            ->where('user_id', auth()->id())
-                            ->get();
-    }
-
-    $html = view('sub-category.data-table', compact('subCategories'))->render();
-
-    return response()->json([
-        'success' => $deleted,
-        'message' => $deleted ? 'Sub Category deleted successfully' : 'Sub Category deletion failed',
-        'html'    => $html
-    ]);
+    public function destroy($id)
+    {
 
 
-        
+        $user = auth()->user();
+
+        if ($user->is_admin == 1) {
+            $subCategory = SubCategory::findOrFail($id);
+            $deleted = $subCategory->delete();
+            $subCategories = SubCategory::with('category')->get();
+        } else {
+            $subCategory = SubCategory::where('user_id', auth()->id())->findOrFail($id);
+            $deleted = $subCategory->delete();
+            $subCategories = SubCategory::with('category')->where('user_id', auth()->id())->get();
+        }
+
+        $html = view('sub-category.data-table', compact('subCategories'))->render();
+
+        return response()->json([
+            'success' => $deleted,
+            'message' => $deleted ? 'Sub Category deleted successfully' : 'Sub Category deletion failed',
+            'html'    => $html
+        ]);
     }
 }

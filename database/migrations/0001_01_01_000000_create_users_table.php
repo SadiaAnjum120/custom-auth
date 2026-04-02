@@ -19,6 +19,17 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+               $table->enum('role', ['super_admin', 'shop_admin', 'customer'])
+              ->default('shop_admin');
+
+        // Shop Fields
+        $table->string('shop_name')->nullable();
+        $table->string('shop_url')->unique()->nullable();
+        $table->string('shop_number')->nullable();
+
+        // Approval Status
+        $table->enum('approval_status', ['pending','approved','rejected','suspended'])
+              ->default('pending');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -45,5 +56,12 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+          $table->dropColumn([
+            'role',
+            'shop_name',
+            'shop_url',
+            'shop_number',
+            'approval_status'
+        ]);
     }
 };

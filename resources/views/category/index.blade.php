@@ -57,7 +57,7 @@
 @endsection
 
 @section('scripts')
-@section('scripts')
+
 <script>
 $(document).ready(function() {
 
@@ -104,9 +104,18 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr){
-                toastr.error("Something went wrong!");
+                if(xhr.status === 422){
+                    var errors = xhr.responseJSON.errors;
+                    var message = '';
+                    $.each(errors, function(key, value){ message += value[0] + '\n'; });
+                    toastr.error(message);
+                } else {
+                    toastr.error('Something went wrong!');
+                    console.log(xhr.responseText);
+                }
             }
         });
+
     });
 
     // DELETE with SweetAlert
@@ -177,6 +186,12 @@ $(document).ready(function() {
         });
     });
 
+    $('#addCategoryModal').on('hidden.bs.modal', function () {
+        $('#categoryName').val('');
+        $('#categoryStatus').prop('checked', true);
+        $('#addCategoryModalTitle').text('Add Category');
+        window.editCategoryId = null;
+    });
 });
 </script>
 @endsection

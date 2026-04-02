@@ -9,8 +9,8 @@
             {{ $category->is_active ? 'Active' : 'Inactive' }}
         </span>
     </td>
-    <td>{{ $category->created_at ? $category->created_at->format('Y-m-d H:i:s') : '-' }}</td>
-    <td>{{ $category->updated_at ? $category->updated_at->format('Y-m-d H:i:s') : '-' }}</td>
+    <td>{{ $category->created_at ? $category->created_at->format('M, d, Y') : '-' }}</td>
+    <td>{{ $category->updated_at ? $category->updated_at->format('M, d, Y') : '-' }}</td>
    <td>
     <div class="dropdown">
         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">

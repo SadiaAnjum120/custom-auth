@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Password;
 class AuthController extends Controller
 {
     // -------------------------------------------------------------------------
-    // Register / Signup
+    // Register / Signup (Shop Admin Register)
     // -------------------------------------------------------------------------
 
     public function register()
@@ -23,25 +23,37 @@ class AuthController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name'  => 'required|string|max:255',
-            'address'    => 'nullable|string|max:255',
-            'email'      => 'required|email|unique:users,email',
-            'password'   => 'required|string|min:8|confirmed',
+            'first_name'  => 'required|string|max:255',
+            'last_name'   => 'required|string|max:255',
+            'address'     => 'nullable|string|max:255',
+            'email'       => 'required|email|unique:users,email',
+            'password'    => 'required|string|min:8|confirmed',
+
+            // NEW SHOP FIELDS
+            'shop_name'   => 'required|string|max:255',
+            'shop_url'    => 'required|string|max:255|unique:users,shop_url',
+            'shop_number' => 'required|string|max:20',
         ]);
 
+        $validated['password'] = Hash::make($validated['password']);
+
+        // DEFAULT VALUES
+        $validated['role'] = 'shop_admin';
+        $validated['approval_status'] = 'pending';
         $validated['is_active'] = false;
         $validated['email_verified_at'] = null;
 
         $user = User::create($validated);
+
+        // Send Email Verification
         $user->sendEmailVerificationNotification();
 
         return redirect()->route('login')
-            ->with('success', 'Please verify your email before login.');
+            ->with('success', 'Please verify your email. Your shop will be reviewed by admin.');
     }
 
     // -------------------------------------------------------------------------
-    // Login / Logout
+    // Login
     // -------------------------------------------------------------------------
 
     public function login()
@@ -59,24 +71,33 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->with('error', 'This email is not registered. Please create an account.');
+            return back()->with('error', 'This email is not registered.');
         }
 
-        if (!Auth::attempt(
-            ['email' => $request->email, 'password' => $request->password],
-            $request->boolean('remember')
-        )) {
+        if (!Hash::check($request->password, $user->password)) {
             return back()->with('error', 'Invalid email or password.');
         }
 
+        // Email verification check
         if (!$user->hasVerifiedEmail()) {
-            Auth::logout();
-            return back()->with('error', 'Please verify your email before login.');
+            return back()->with('error', 'Please verify your email first.');
         }
 
-        return redirect()->intended(route('home'))
+        // 🔥 SHOP ADMIN APPROVAL CHECK
+       if($user->role === 'shop_admin' && $user->approval_status !== 'approved') {
+    Auth::logout();
+    return redirect()->route('login')->with('error','Your shop is not approved.');
+}
+
+        Auth::login($user, $request->boolean('remember'));
+
+        return redirect()->route('home')
             ->with('success', 'Login successful!');
     }
+
+    // -------------------------------------------------------------------------
+    // Logout
+    // -------------------------------------------------------------------------
 
     public function logout(Request $request)
     {
@@ -106,7 +127,7 @@ class AuthController extends Controller
         $status = Password::sendResetLink($request->only('email'));
 
         return $status === Password::RESET_LINK_SENT
-            ? back()->with('success', 'Password reset link has been sent to your email.')
+            ? back()->with('success', 'Password reset link sent.')
             : back()->with('error', 'This email is not registered.');
     }
 
@@ -133,7 +154,7 @@ class AuthController extends Controller
         );
 
         return $status === Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('success', 'Password reset successful. Please login.')
+            ? redirect()->route('login')->with('success', 'Password reset successful.')
             : back()->with('error', 'Invalid or expired reset link.');
     }
 
@@ -159,6 +180,6 @@ class AuthController extends Controller
         }
 
         return redirect()->route('login')
-            ->with('success', 'Email verified successfully! You can now login.');
+            ->with('success', 'Email verified. Wait for admin approval.');
     }
 }

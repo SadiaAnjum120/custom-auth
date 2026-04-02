@@ -6,20 +6,20 @@
 
     <td>{{ $subCategory->category->name ?? '-' }}</td>
 
-    
+
     <td>{{ $subCategory->name ?? '-' }}</td>
 
     <td>{{ $subCategory->slug ?? '-' }}</td>
-    
+
     <td>
         <span class="badge text-bg-{{ $subCategory->is_active ? 'success' : 'danger' }}">
             {{ $subCategory->is_active ? 'Active' : 'Inactive' }}
         </span>
     </td>
 
-    <td>{{ $subCategory->created_at ? $subCategory->created_at->format('Y-m-d H:i:s') : '-' }}</td>
+    <td>{{ $subCategory->created_at ? $subCategory->created_at->format('M, d, Y') : '-' }}</td>
 
-    <td>{{ $subCategory->updated_at ? $subCategory->updated_at->format('Y-m-d H:i:s') : '-' }}</td>
+    <td>{{ $subCategory->updated_at ? $subCategory->updated_at->format('M, d, Y') : '-' }}</td>
 
    <td>
     <div class="dropdown">

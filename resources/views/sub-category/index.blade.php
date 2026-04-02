@@ -138,9 +138,16 @@ $(document).ready(function(){
                 }
 
             },
-            error: function(xhr){
-                console.log(xhr.responseText);
-                toastr.error('Something went wrong!');
+           error: function(xhr){
+                if(xhr.status === 422){
+                    var errors = xhr.responseJSON.errors;
+                    var message = '';
+                    $.each(errors, function(key, value){ message += value[0] + '\n'; });
+                    toastr.error(message);
+                } else {
+                    toastr.error('Something went wrong!');
+                    console.log(xhr.responseText);
+                }
             }
         });
 
@@ -232,6 +239,8 @@ $(document).ready(function(){
 
 
     // RESET FORM FUNCTION
+// RESET MODAL WHEN CLOSED
+
 
     function resetForm(){
 
@@ -242,7 +251,9 @@ $(document).ready(function(){
 
         window.editSubCategoryId = null;
     }
-
+$('#addSubCategoryModal').on('hidden.bs.modal', function () {
+    resetForm();
+});
 });
 </script>
 @endsection

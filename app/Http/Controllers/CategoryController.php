@@ -7,32 +7,36 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class CategoryController extends Controller
+class CategoryController extends BaseController
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        parent::__construct(); // BaseController ka constructor call hoga
+        $this->middleware('auth'); // auth check
     }
 
-
+    // ------------------------------
     // INDEX (Only Logged-in User Data)
-
+    // ------------------------------
     public function index()
     {
-        if (auth()->check() && auth()->user()->is_admin) {
-            $categories = Category::all();
-        } else {
-            $categories = Category::where('user_id', auth()->id())->get();
-        }
+
+
+        $user = auth()->user();
+        $categories = Category::userData()->get(); // Scope method se data fetch
 
         return view('category.index', compact('categories'));
     }
 
+    // ------------------------------
     // STORE
+    // ------------------------------
     public function store(Request $request)
     {
+
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:categories,name',
             'is_active' => 'required|in:0,1',
         ]);
 
@@ -41,25 +45,19 @@ class CategoryController extends Controller
 
         $category = Category::create($validated);
 
-        if ($category) {
-            return $this->getLatestCategory(true, 'Category created successfully');
-        } else {
-            return $this->getLatestCategory(false, 'Category creation failed');
-        }
+        return $this->getLatestCategory($category ? true : false, $category ? 'Category created successfully' : 'Category creation failed');
     }
 
-
+    // ------------------------------
     // GET LATEST (AJAX TABLE REFRESH)
-
-    private function getLatestCategory($success = true, $message = 'Category Saved successfully!', $html = null)
+    // ------------------------------
+    private function getLatestCategory($success = true, $message = 'Category saved successfully!', $html = null)
     {
-        if (auth()->user()->is_admin) {
-            $categories = Category::all();
-        } else {
-            $categories = Category::where('user_id', auth()->id())->get();
-        }
+        $user = auth()->user();
 
-        if ($html == null) {
+         $categories = Category::userData()->get(); // Scope method se data fetch
+
+        if ($html === null) {
             $html = view('category.data-table', compact('categories'))->render();
         }
 
@@ -70,16 +68,16 @@ class CategoryController extends Controller
         ]);
     }
 
-
+    // ------------------------------
     // EDIT
+    // ------------------------------
     public function edit($id)
     {
-        if (auth()->check() && auth()->user()->is_admin) {
-            $category = Category::findOrFail($id);
-        } else {
-        $category = Category::where('user_id', auth()->id())
-                            ->findOrFail($id);
-        }
+
+
+        $user = auth()->user();
+
+         $category = Category::userData()->findOrFail($id); // Scope method se data fetch
 
         return response()->json([
             'success' => true,
@@ -87,55 +85,47 @@ class CategoryController extends Controller
         ]);
     }
 
+    // ------------------------------
     // UPDATE
+    // ------------------------------
     public function update(Request $request, $id)
     {
+
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'is_active' => 'required|in:0,1',
         ]);
-if (auth()->check() && auth()->user()->is_admin) {
-            $category = Category::findOrFail($id);
-        } else {
-        $category = Category::where('user_id', auth()->id())
-                            ->findOrFail($id);
-        }
+
+        $user = auth()->user();
+
+            $category = Category::userData()->findOrFail($id); // Scope method se data fetch
+
+
 
         $validated['slug'] = Str::slug($validated['name']);
-
         $updated = $category->update($validated);
 
-        if ($updated) {
-            return $this->getLatestCategory(true, 'Category updated successfully');
-        } else {
-            return $this->getLatestCategory(false, 'Category update failed');
-        }
+        return $this->getLatestCategory($updated, $updated ? 'Category updated successfully' : 'Category update failed');
     }
 
+    // ------------------------------
     // DELETE
-   public function destroy($id)
-{
-    if (auth()->check() && auth()->user()->is_admin) {
-        
-        $category = Category::findOrFail($id);
-        $deleted = $category->delete();
+    // ------------------------------
+    public function destroy($id)
+    {
+        $user = auth()->user();
 
-        $categories = Category::all();
-    } else {
-        
-        $category = Category::where('user_id', auth()->id())->findOrFail($id);
+        $category = Category::userData()->findOrFail($id);
         $deleted = $category->delete();
-    
-        $categories = Category::where('user_id', auth()->id())->get();
+        $categories = Category::userData()->get();
+
+        $html = view('category.data-table', compact('categories'))->render();
+
+        return response()->json([
+            'success' => $deleted,
+            'message' => $deleted ? 'Category deleted successfully' : 'Category deletion failed',
+            'html' => $html
+        ]);
     }
-
-    $html = view('category.data-table', compact('categories'))->render();
-
-    return response()->json([
-        'success' => $deleted,
-        'message' => $deleted ? 'Category deleted successfully' : 'Category deletion failed',
-        'html' => $html
-    ]);
-}
-
 }

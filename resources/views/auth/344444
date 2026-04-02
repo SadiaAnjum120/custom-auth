@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en" class="layout-wide customizer-hide" dir="ltr" data-skin="default" data-bs-theme="light" data-assets-path="{{ asset('assets') }}" data-template="vertical-menu-template">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>@yield('title')</title>
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&ampdisplay=swap" rel="stylesheet" />
+
+    <!-- Icon fonts -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/node-waves/node-waves.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/pickr/pickr-themes.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/@form-validation/form-validation.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/page-auth.css') }}" />
+
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <!-- Helpers & Config -->
+    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
+</head>
+
+<body>
+    <div class="container-xxl">
+        @yield('content')
+    </div>
+
+    <!-- jQuery (must be before Toastr) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Blade page scripts -->
+    @yield('scripts')
+
+    <!-- Core JS -->
+    <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/pickr/pickr.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
+
+    <!-- Vendors JS -->
+    <script src="{{ asset('assets/vendor/libs/@form-validation/popular.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@form-validation/bootstrap5.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@form-validation/auto-focus.js') }}"></script>
+
+    <!-- Main JS -->
+    <script src="{{ asset('assets/js/main.js') }}"></script>
+    <script src="{{ asset('assets/js/pages-auth.js') }}"></script>
+</body>
+</html>
+
+
+@extends('auth.layout')
+
+@section('title')
+    Login - {{ config('app.name') }}
+@endsection
+
+@section('content')
+<div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner py-6">
+        <div class="card">
+            <div class="card-body">
+                <!-- Logo -->
+                <div class="app-brand justify-content-center mb-6">
+                    <a href="index.html" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <span class="text-primary">
+                                <!-- SVG logo here -->
+                            </span>
+                        </span>
+                        <span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+                    </a>
+                </div>
+
+                <h4 class="mb-1">Welcome to Vuexy! 👋</h4>
+                <p class="mb-6">Please sign-in to your account and start the adventure</p>
+
+                <form action="{{ route('login.submit') }}" method="POST">
+                    @csrf
+                    <div class="mb-6 form-control-validation">
+                        <label for="email" class="form-label">Email or Username</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required autofocus />
+                    </div>
+
+                    <div class="mb-6 form-password-toggle form-control-validation">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="input-group input-group-merge">
+                            <input type="password" id="password" class="form-control" name="password" placeholder="••••••••••••" aria-describedby="password" />
+                            <span class="input-group-text cursor-pointer"><i class="icon-base ti tabler-eye-off"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="my-8 d-flex justify-content-between">
+                        <div class="form-check mb-0 ms-2">
+                            <input class="form-check-input" type="checkbox" id="remember-me" name="remember" />
+                            <label class="form-check-label" for="remember-me"> Remember Me </label>
+                        </div>
+                        <a href="{{ route('forgot') }}"><p class="mb-0">Forgot Password?</p></a>
+                    </div>
+
+                    <div class="mb-6">
+                        <button class="btn btn-primary d-grid w-100" type="submit">Login</button>
+                    </div>
+                </form>
+
+                <p class="text-center">
+                    <span>New on our platform?</span>
+                    <a href="{{ route('register') }}"><span>Create an account</span></a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+    // Toastr options
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": "5000"
+    };
+
+    $(document).ready(function() {
+        @if (session('success'))
+            toastr.success("{!! session('success') !!}");
+        @endif
+
+        @if (session('error'))
+            toastr.error("{!! session('error') !!}");
+        @endif
+
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                toastr.error("{!! $error !!}");
+            @endforeach
+        @endif
+    });
+</script>
+@endsection

@@ -10,7 +10,33 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements MustVerifyEmailContract
 {
-    use Notifiable, MustVerifyEmail;
+    use HasFactory, Notifiable, MustVerifyEmail;
+
+    // =============================
+    // ✅ ROLE CONSTANTS
+    // =============================
+    public const ROLE_SUPER_ADMIN = 'super_admin';
+    public const ROLE_SHOP_ADMIN  = 'shop_admin';
+    public const ROLE_CUSTOMER    = 'customer';
+
+    // =============================
+    // ✅ ROLE CHECK FUNCTIONS
+    // =============================
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPER_ADMIN;
+    }
+
+    public function isShopAdmin(): bool
+    {
+        return $this->role === self::ROLE_SHOP_ADMIN;
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin; // full admin flag
+    }
+
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +54,11 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'password',
         'remember_token',
          'is_admin',
+         'role',
+    'shop_name',
+    'shop_url',
+    'shop_number',
+    'approval_status',
     ];
 
     /**
@@ -58,4 +89,27 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return trim("{$this->first_name} {$this->last_name}");
     }
+    public function orders()
+{
+    return $this->hasMany(Order::class);
+}
+public function categories()
+{
+    return $this->hasMany(Category::class);
+}
+
+public function subCategories()
+{
+    return $this->hasMany(SubCategory::class);
+}
+
+public function products()
+{
+    return $this->hasMany(Product::class);
+}
+
+public function customers()
+{
+    return $this->hasMany(Customer::class);
+}
 }

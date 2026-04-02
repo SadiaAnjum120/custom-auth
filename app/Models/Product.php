@@ -33,11 +33,23 @@ class Product extends Model
         return $this->belongsTo(SubCategory::class);
     }
 
+    public function orderItems()
+{
+    return $this->hasMany(OrderItem::class);
+}
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
     // Accessor for image URL
 public function getImageAttribute($value)
 {
-    return $value ? asset('storage/' . $value) : null;
+    return $value
+        ? asset('storage/products/' . $value)
+        : null;
 }
+
 
 
 

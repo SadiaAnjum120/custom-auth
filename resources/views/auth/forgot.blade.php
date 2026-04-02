@@ -46,17 +46,7 @@
           <!-- /Logo -->
           <h4 class="mb-1">Adventure starts here 🚀</h4>
           <p class="mb-6">Make your app management easy and fun!</p>
-          @if (session('error'))
-    <div class="alert alert-danger text-center mb-4">
-        {{ session('error') }}
-    </div>
-@endif
 
-@if (session('success'))
-    <div class="alert alert-success text-center mb-4">
-        {{ session('success') }}
-    </div>
-@endif
 
        <form id="formAuthentication" class="mb-6" action="{{ route('password.email') }}" method="POST">
     @csrf

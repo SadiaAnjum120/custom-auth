@@ -47,11 +47,6 @@
             <!-- /Logo -->
             <h4 class="mb-1">Welcome to Vuexy! 👋</h4>
             <p class="mb-6">Please sign-in to your account and start the adventure</p>
-@if (session('error'))
-    <div class="alert alert-danger text-center mb-4">
-        {{ session('error') }}
-    </div>
-@endif
 
             <form action="{{ route('login.submit') }}" method="POST">
     @csrf
@@ -116,3 +111,5 @@
       </div>
     </div>
 @endsection
+
+
