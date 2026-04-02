@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -10,14 +9,10 @@ use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
-<<<<<<< HEAD
     public function __construct()
     {
-        $this->middleware(['auth']);
+        $this->middleware('auth');
     }
-=======
-    /** All profile routes are protected by the 'auth' middleware in the route group. */
->>>>>>> bc76bce9744c589c4d8f982174347feeaaf5da19
 
     /**
      * Show the user profile (view only).
