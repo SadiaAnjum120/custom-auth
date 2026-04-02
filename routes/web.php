@@ -11,11 +11,17 @@ use App\Http\Controllers\Admin\SuperAdminController;
 // ----------------------
 
 Route::get('/', fn () => view('welcome'))->name('home');
+Route::get('/', fn () => view('welcome'))->name('home');
 
 // ----------------------
 // Auth (guest only: login, register, forgot, reset)
+// Auth (guest only: login, register, forgot, reset)
 // ----------------------
 
+Route::middleware('guest')->controller(AuthController::class)->group(function () {
+    // Register / Signup
+    Route::get('/register', 'register')->name('register');
+    Route::post('/register', 'store')->name('register.store');
 Route::middleware('guest')->controller(AuthController::class)->group(function () {
     // Register / Signup
     Route::get('/register', 'register')->name('register');
@@ -33,14 +39,29 @@ Route::middleware('guest')->controller(AuthController::class)->group(function ()
     Route::get('/reset-password/{token}', 'resetForm')->name('password.reset');
     Route::post('/reset-password', 'resetPassword')->name('password.update');
 });
+    // Login
+    Route::get('/login', 'login')->name('login');
+    Route::post('/login', 'loginSubmit')->name('login.submit');
+
+    // Forgot password
+    Route::get('/forgot', 'forgot')->name('forgot');
+    Route::post('/forgot', 'sendResetLink')->name('password.email');
+
+    // Reset password (form + submit)
+    Route::get('/reset-password/{token}', 'resetForm')->name('password.reset');
+    Route::post('/reset-password', 'resetPassword')->name('password.update');
+});
 
 // ----------------------
+// Auth (authenticated: logout)
 // Auth (authenticated: logout)
 // ----------------------
 
 Route::middleware('auth')->post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::middleware('auth')->post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ----------------------
+// Email verification (signed link)
 // Email verification (signed link)
 // ----------------------
 
@@ -49,6 +70,7 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->name('verification.verify');
 
 // ----------------------
+// Profile (auth required, grouped controller)
 // Profile (auth required, grouped controller)
 // ----------------------
 
