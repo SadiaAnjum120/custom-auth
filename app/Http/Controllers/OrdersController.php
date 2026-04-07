@@ -110,15 +110,30 @@ class OrdersController extends BaseController
     // ===============================
     // GET PRODUCTS
     // ===============================
-  public function getProductsBySubCategory($subCategoryId)
-    {
-        $query = Product::where('sub_category_id',$subCategoryId)
-            ->status()->userData()
-            ->available(); // 🔥 KEY FIX
+ public function getProductsBySubCategory($subCategoryId, Request $request)
+{
+    $orderId = $request->query('order_id'); 
 
-        return response()->json($query->get());
+    $query = Product::where('sub_category_id', $subCategoryId)
+        ->status()
+        ->userData();
+
+    if ($orderId) {
+        $orderProductIds = OrderItem::where('order_id', $orderId)
+            ->pluck('product_id')
+            ->toArray();
+
+        $query->where(function($q) use ($orderProductIds) {
+            $q->available() // normally available 
+              ->orWhereIn('id', $orderProductIds); // or already in order
+        });
+    } else {
+        
+        $query->available();
     }
 
+    return response()->json($query->get());
+}
     // ===============================
     // STORE ORDER
     // ===============================

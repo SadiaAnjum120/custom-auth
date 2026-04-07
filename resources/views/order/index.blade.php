@@ -650,7 +650,6 @@ $('#addOrderModal').on('show.bs.modal', function () {
     // Edit Order
 $(document).on('click', '.edit-order', function () {
 
-    // ✅ Edit mode set
     window.editOrderId = $(this).data('id');
 
     $.get('/orders/edit/' + window.editOrderId, function (response) {
@@ -663,9 +662,7 @@ $(document).on('click', '.edit-order', function () {
         let order = response.order || {};
         let orderItems = response.orderItems || [];
 
-        // =========================
-        // MAIN ORDER DATA
-        // =========================
+        // ====== MAIN ORDER DATA ======
         $('#orderId').val(order.id || '');
         $('#orderNumber').val(order.order_number || '');
         $('#order_date').val(order.order_date ? order.order_date.split(' ')[0] : '');
@@ -676,61 +673,40 @@ $(document).on('click', '.edit-order', function () {
         $('#order_status').val(order.order_status || 'created');
         $('textarea[name="notes"]').val(order.notes || '');
 
-        // =========================
-        // RESET ALL PRODUCT ROWS
-        // =========================
+        // ====== RESET ALL PRODUCT ROWS ======
         $('.productRow:not(:first)').remove();
-
         let firstRow = $('.productRow:first');
 
         firstRow.find('.category').val('');
         firstRow.find('.subCategory').html('<option value="">Select Sub Category</option>');
         firstRow.find('.product').html('<option value="">Select Product</option>');
-
         firstRow.find('.catName').text('');
         firstRow.find('.subCatName').text('');
         firstRow.find('.productName').text('');
-
         firstRow.find('.productImg').attr('src', '').hide();
         firstRow.find('.price').val('');
         firstRow.find('.subtotal').val('');
         firstRow.find('.quantity').val(1);
-
         firstRow.find('.productTableWrapper').hide();
 
-        // =========================
-        // POPULATE SINGLE PRODUCT ROW
-        // =========================
+        // ====== POPULATE SINGLE ROW ======
         function populateRow(row, item) {
             return new Promise((resolve) => {
 
                 // CATEGORY
                 row.find('.category').val(item.category_id);
-                row.find('.catName').text(
-                    row.find('.category option:selected').text()
-                );
+                row.find('.catName').text(row.find('.category option:selected').text());
 
                 // LOAD SUBCATEGORIES
                 $.get('/sub-categories/' + item.category_id, function (subs) {
-
                     let subDropdown = row.find('.subCategory');
                     subDropdown.html('<option value="">Select Sub Category</option>');
-
-                    subs.forEach(sub => {
-                        subDropdown.append(
-                            `<option value="${sub.id}">${sub.name}</option>`
-                        );
-                    });
-
+                    subs.forEach(sub => subDropdown.append(`<option value="${sub.id}">${sub.name}</option>`));
                     subDropdown.val(item.sub_category_id);
-
-                    row.find('.subCatName').text(
-                        subDropdown.find('option:selected').text()
-                    );
+                    row.find('.subCatName').text(subDropdown.find('option:selected').text());
 
                     // LOAD PRODUCTS
-                    $.get('/products/' + item.sub_category_id, function (products) {
-
+                    $.get('/products/' + item.sub_category_id + '?order_id=' + window.editOrderId, function (products) {
                         let productDropdown = row.find('.product');
                         productDropdown.html('<option value="">Select Product</option>');
 
@@ -748,27 +724,23 @@ $(document).on('click', '.edit-order', function () {
                         productDropdown.val(item.product_id);
 
                         let selected = productDropdown.find('option:selected');
-
                         let name = selected.text();
                         let image = selected.data('image') || '';
                         let price = parseFloat(selected.data('price')) || 0;
-                        let stock = parseInt(selected.data('stock')) || 9999;
-                        let qty = parseInt(item.quantity) || 1;
+                        let stock = parseInt(selected.data('stock')) || 0;
+                        let qtyInOrder = parseInt(item.quantity) || 1;
+
+                        // 🔹 MAX quantity = stock + already in order
+                        let maxQty = stock + qtyInOrder;
+                        row.find('.quantity').attr('max', maxQty);
 
                         // UI UPDATE
                         row.find('.productTableWrapper').show();
                         row.find('.productName').text(name);
-
-                        if (image) {
-                            row.find('.productImg').attr('src', image).show();
-                        } else {
-                            row.find('.productImg').hide();
-                        }
-
+                        if (image) row.find('.productImg').attr('src', image).show(); else row.find('.productImg').hide();
                         row.find('.price').val(price.toFixed(2));
-                        row.find('.quantity').val(qty);
-                        row.find('.quantity').attr('max', stock);
-                        row.find('.subtotal').val((price * qty).toFixed(2));
+                        row.find('.quantity').val(qtyInOrder);
+                        row.find('.subtotal').val((price * qtyInOrder).toFixed(2));
 
                         resolve();
                     });
@@ -776,21 +748,10 @@ $(document).on('click', '.edit-order', function () {
             });
         }
 
-        // =========================
-        // LOAD ALL PRODUCT ROWS
-        // =========================
+        // ====== POPULATE ALL ROWS ======
         async function populateAllRows(items) {
             for (let i = 0; i < items.length; i++) {
-
-                let row;
-
-                if (i === 0) {
-                    row = $('.productRow').eq(0);
-                } else {
-                    $('#addRow').trigger('click');
-                    row = $('.productRow').eq(i);
-                }
-
+                let row = (i === 0) ? $('.productRow').eq(0) : ($('#addRow').trigger('click'), $('.productRow').eq(i));
                 await populateRow(row, items[i]);
             }
         }
@@ -802,6 +763,20 @@ $(document).on('click', '.edit-order', function () {
         });
 
     });
+});
+
+// ====== FRIENDLY MAX QUANTITY VALIDATION ======
+$(document).on('input', '.quantity', function () {
+    let val = parseInt($(this).val());
+    let max = parseInt($(this).attr('max'));
+    if (val > max) {
+         showInlineError(row, `You can add only ${max} quantity based on current stock`);
+        $(this).val(max); // auto-adjust value
+    } else {
+        // Hide inline error if quantity is within limit
+        row.find('.qtyError').addClass('d-none').text('');
+    }
+
 });
     // Delete Order
     $(document).on('click','.delete-order',function(){

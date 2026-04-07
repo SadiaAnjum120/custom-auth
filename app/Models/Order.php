@@ -22,10 +22,7 @@ class Order extends Model
     'notes',
 ];
     use CommonScopes;
-    public function scopeAvailable($query)
-    {
-        return $query->where('quantity', '>', 0);
-    }
+
 
     // ============================
     // RELATIONSHIPS
