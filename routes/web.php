@@ -125,6 +125,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/shops/reject/{id}', [SuperAdminController::class, 'reject'])->name('shops.reject');
 
     Route::post('/shops/suspend/{id}', [SuperAdminController::class, 'suspend'])->name('shops.suspend');
+    Route::get('/impersonate/{id}', [SuperAdminController::class, 'impersonate']);
+Route::get('/stop-impersonate', [SuperAdminController::class, 'stopImpersonate'])->name('stop-impersonate');
 
 });
 use App\Http\Controllers\CustomerController;

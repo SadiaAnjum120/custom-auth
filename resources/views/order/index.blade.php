@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Order')
 
 @section('content')
 
@@ -104,20 +105,11 @@
 
                     <!-- Customer + Order Status + Paid -->
 
+             <div class="row mb-3">
 
-
-
-                    <!-- Product Rows -->
-                    <div id="productRows">
-                        <div class="productRow border rounded p-3 mb-3">
-                            <div class="row">
-
-
-    <div class="col-md-3">
+    <div class="col-md-12">
         <label>Customer</label>
-
-      <select name="customer_id" id="customer_id" class="form-control customer">
-
+        <select name="customer_id" id="customer_id" class="form-control">
             <option value="">Select Customer</option>
             @foreach($customers as $customer)
                 <option value="{{ $customer->id }}">
@@ -129,8 +121,20 @@
 
 
 
+</div>
 
-                                <div class="col-md-3">
+
+                    <!-- Product Rows -->
+                    <div id="productRows">
+                        <div class="productRow border rounded p-3 mb-3">
+                            <div class="row">
+
+
+
+
+
+
+                                <div class="col-md-4">
                                     <label>Category</label>
                                     <select name="category_id[]" id="category_id" class="form-control category">
                                         <option value="">Select Category</option>
@@ -140,14 +144,14 @@
                                     </select>
                                 </div>
 
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <label>Sub Category</label>
                                     <select name="sub_category_id[]" id="sub_category_id" class="form-control subCategory">
                                         <option value="">Select Sub Category</option>
                                     </select>
                                 </div>
 
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <label>Product</label>
                                     <select name="product_id[]" id="product_id" class="form-control product">
                                         <option value="">Select Product</option>
@@ -644,15 +648,15 @@ $('#addOrderModal').on('show.bs.modal', function () {
     });
 
     // Edit Order
-$(document).on('click', '.edit-order', function() {
+$(document).on('click', '.edit-order', function () {
 
-    // ✅ Set edit mode FIRST
+    // ✅ Edit mode set
     window.editOrderId = $(this).data('id');
 
-    $.get('/orders/edit/' + window.editOrderId, function(response) {
+    $.get('/orders/edit/' + window.editOrderId, function (response) {
 
         if (!response.success) {
-            alert('Failed to fetch order data!');
+            toastr.error('Failed to fetch order data!');
             return;
         }
 
@@ -660,60 +664,62 @@ $(document).on('click', '.edit-order', function() {
         let orderItems = response.orderItems || [];
 
         // =========================
-        // ✅ MAIN ORDER DATA
+        // MAIN ORDER DATA
         // =========================
         $('#orderId').val(order.id || '');
         $('#orderNumber').val(order.order_number || '');
-
-        // 🔥 FIX: date format
-        $('#order_date').val(
-            order.order_date ? order.order_date.split(' ')[0] : ''
-        );
-
-      setTimeout(function(){
-    $('#customer_id').val(order.customer_id || '').trigger('change');
-}, 100);
+        $('#order_date').val(order.order_date ? order.order_date.split(' ')[0] : '');
+        $('#customer_id').val(order.customer_id || '');
         $('#paidAmount').val(order.paid_amount || 0);
         $('#taxAmount').val(order.tax || 0);
         $('#discountAmount').val(order.discount || 0);
-        $('#totalAmount').val(order.total || 0);
-        $('#dueAmount').val(order.due_amount || 0);
         $('#order_status').val(order.order_status || 'created');
         $('textarea[name="notes"]').val(order.notes || '');
 
         // =========================
-        // RESET ROWS
+        // RESET ALL PRODUCT ROWS
         // =========================
         $('.productRow:not(:first)').remove();
 
         let firstRow = $('.productRow:first');
 
-        // clear first row
-        firstRow.find('select').val('');
-        firstRow.find('input').val('');
+        firstRow.find('.category').val('');
+        firstRow.find('.subCategory').html('<option value="">Select Sub Category</option>');
+        firstRow.find('.product').html('<option value="">Select Product</option>');
+
+        firstRow.find('.catName').text('');
+        firstRow.find('.subCatName').text('');
+        firstRow.find('.productName').text('');
+
+        firstRow.find('.productImg').attr('src', '').hide();
+        firstRow.find('.price').val('');
+        firstRow.find('.subtotal').val('');
+        firstRow.find('.quantity').val(1);
+
         firstRow.find('.productTableWrapper').hide();
 
         // =========================
-        // ✅ POPULATE ROW FUNCTION
+        // POPULATE SINGLE PRODUCT ROW
         // =========================
         function populateRow(row, item) {
             return new Promise((resolve) => {
 
                 // CATEGORY
                 row.find('.category').val(item.category_id);
-
                 row.find('.catName').text(
                     row.find('.category option:selected').text()
                 );
 
-                // SUBCATEGORIES
-                $.get('/sub-categories/' + item.category_id, function(subs){
+                // LOAD SUBCATEGORIES
+                $.get('/sub-categories/' + item.category_id, function (subs) {
 
                     let subDropdown = row.find('.subCategory');
                     subDropdown.html('<option value="">Select Sub Category</option>');
 
                     subs.forEach(sub => {
-                        subDropdown.append(`<option value="${sub.id}">${sub.name}</option>`);
+                        subDropdown.append(
+                            `<option value="${sub.id}">${sub.name}</option>`
+                        );
                     });
 
                     subDropdown.val(item.sub_category_id);
@@ -722,19 +728,21 @@ $(document).on('click', '.edit-order', function() {
                         subDropdown.find('option:selected').text()
                     );
 
-                    // PRODUCTS
-                    $.get('/products/' + item.sub_category_id, function(products){
+                    // LOAD PRODUCTS
+                    $.get('/products/' + item.sub_category_id, function (products) {
 
                         let productDropdown = row.find('.product');
                         productDropdown.html('<option value="">Select Product</option>');
 
                         products.forEach(p => {
-                            productDropdown.append(`<option
-                                value="${p.id}"
-                                data-image="${p.image}"
-                                data-stock="${p.quantity}"
-                                data-price="${p.price}"
-                            >${p.name}</option>`);
+                            productDropdown.append(`
+                                <option value="${p.id}"
+                                    data-image="${p.image || ''}"
+                                    data-stock="${p.quantity || 0}"
+                                    data-price="${p.price || 0}">
+                                    ${p.name}
+                                </option>
+                            `);
                         });
 
                         productDropdown.val(item.product_id);
@@ -742,20 +750,25 @@ $(document).on('click', '.edit-order', function() {
                         let selected = productDropdown.find('option:selected');
 
                         let name = selected.text();
-                        let image = selected.data('image');
-                        let price = selected.data('price');
+                        let image = selected.data('image') || '';
+                        let price = parseFloat(selected.data('price')) || 0;
+                        let stock = parseInt(selected.data('stock')) || 9999;
+                        let qty = parseInt(item.quantity) || 1;
 
-                        // UI update
+                        // UI UPDATE
                         row.find('.productTableWrapper').show();
                         row.find('.productName').text(name);
-                        row.find('.productImg').attr('src', image).show();
-                        row.find('.price').val(price);
 
-                        // Quantity
-                        let qty = item.quantity || 1;
+                        if (image) {
+                            row.find('.productImg').attr('src', image).show();
+                        } else {
+                            row.find('.productImg').hide();
+                        }
+
+                        row.find('.price').val(price.toFixed(2));
                         row.find('.quantity').val(qty);
-
-                        row.find('.subtotal').val(price * qty);
+                        row.find('.quantity').attr('max', stock);
+                        row.find('.subtotal').val((price * qty).toFixed(2));
 
                         resolve();
                     });
@@ -764,7 +777,7 @@ $(document).on('click', '.edit-order', function() {
         }
 
         // =========================
-        // LOAD ALL ITEMS
+        // LOAD ALL PRODUCT ROWS
         // =========================
         async function populateAllRows(items) {
             for (let i = 0; i < items.length; i++) {
@@ -783,10 +796,7 @@ $(document).on('click', '.edit-order', function() {
         }
 
         populateAllRows(orderItems).then(() => {
-
-            // 🔥 Important: recalc totals
             calculateSummary();
-
             $('#addOrderModalTitle').text('Edit Order');
             $('#addOrderModal').modal('show');
         });

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Traits\CommonScopes;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,7 +14,11 @@ class OrderItem extends Model
         'product_id',
         'quantity'
     ];
-
+    use CommonScopes;
+     public function scopeAvailable($query)
+    {
+        return $query->where('quantity', '>', 0);
+    }
     // Relationships
 
     public function order()

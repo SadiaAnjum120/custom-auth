@@ -1,5 +1,6 @@
 
 @extends('layouts.app')
+@section('title', 'Shop List')
 @section('content')
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -16,6 +17,7 @@
                     <th>Email</th>
                     <th>Shop Name</th>
                     <th>Status</th>
+                    <th>impersonate</th>
                     <th>Action</th>
 
                 </tr>
@@ -28,6 +30,7 @@
    </div>
 
 </div>
+@endsection
 @section('scripts')
 <script>
 $(document).ready(function() {
@@ -54,6 +57,17 @@ $(document).ready(function() {
                 if(response.success){
                     toastr.success(response.message);
 
+                   // destroy and rebuild datatable
+        shopTable.destroy();
+
+        $('#shop-table-body')
+            .load(location.href + ' #shop-table-body>*', function () {
+
+                shopTable = $('#shop-table').DataTable({
+                    responsive: true
+                });
+                  });
+
                     // Safely update status badge
                     var row = button.closest('tr');
                     var badge = row.find('td:nth-child(5) span');
@@ -72,6 +86,24 @@ $(document).ready(function() {
     });
 
 });
+function confirmImpersonate(shopId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to impersonate this shop!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#696cff',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Impersonate!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/admin/impersonate/' + shopId;
+        }
+    });
+}
+
+
 </script>
 @endsection
-@endsection
+

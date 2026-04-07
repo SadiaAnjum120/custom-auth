@@ -3,7 +3,7 @@
 namespace App\Models;
 use App\Models\Product;
 
-
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Model;
 
 class SubCategory extends Model
@@ -15,6 +15,11 @@ class SubCategory extends Model
         'slug',
         'is_active',
     ];
+  use CommonScopes;
+
+
+
+
 
     public function category()
     {
@@ -23,5 +28,13 @@ class SubCategory extends Model
     public function products()
 {
     return $this->hasMany(Product::class);
+}
+public function orderItems()
+{
+    return $this->hasMany(OrderItem::class);
+}
+public function user()
+{
+    return $this->belongsTo(User::class);
 }
 }

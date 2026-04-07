@@ -22,39 +22,17 @@ class ProductController extends BaseController
     public function index()
     {
 
+        $categories = Category::status()->userData()->get();
+        $products = Product::with('category', 'subCategory')->userData()->get();
 
-
-        $user = auth()->user();
-
- if ($user->is_admin == 1)  {
-            $categories = Category::where('is_active', 1)->get();
-            $products = Product::with('category', 'subCategory')->get();
-        } else {
-            $categories = Category::where('user_id', auth()->id())
-                                  ->where('is_active', 1)
-                                  ->get();
-
-            $products = Product::with('category', 'subCategory')
-                               ->where('user_id', auth()->id())
-                               ->get();
-        }
-
-        return view('product.index', compact('products', 'categories'));
+          return view('product.index', compact('products', 'categories'));
     }
 
     // GET SUBCATEGORIES BY CATEGORY (AJAX)
     public function getSubCategoriesByCategory($categoryId)
     {
-        if (auth()->check() && auth()->user()->is_admin == 1) {
-            $subCategories = SubCategory::where('category_id', $categoryId)
-                                        ->where('is_active', 1)
-                                        ->get();
-        } else {
-            $subCategories = SubCategory::where('category_id', $categoryId)
-                                        ->where('user_id', auth()->id())
-                                        ->where('is_active', 1)
-                                        ->get();
-        }
+
+            $subCategories = SubCategory::userData()->status()->where('category_id', $categoryId) ->get();
 
         return response()->json($subCategories);
     }
@@ -65,22 +43,24 @@ class ProductController extends BaseController
 
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+             'name' => 'required|string|max:255|unique:products,name,NULL,id,user_id,' . auth()->id(),
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'required|exists:sub_categories,id',
-            'price' => 'required|numeric',
-            'cost' => 'required|numeric',
-            'quantity' => 'required|integer',
+            'price' => 'required|numeric|min:0',
+            'cost' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'required|in:0,1',
+
+
         ]);
 
         $validated['user_id'] = auth()->id();
         $validated['approval_status'] = 'pending'; // New products are pending by default
 
-        do {
-            $sku = 'SKU-' . strtoupper(\Illuminate\Support\Str::random(6));
-        } while (Product::where('sku', $sku)->where('user_id', auth()->id())->exists());
+       do {
+    $sku = 'SKU-' . strtoupper(\Illuminate\Support\Str::random(6));
+} while (Product::where('sku', $sku)->exists());
 
         $validated['sku'] = $sku;
 
@@ -103,15 +83,9 @@ class ProductController extends BaseController
     private function getLatestProducts($success = true, $message = 'Product saved successfully!', $html = null)
     {
 
-        $user = auth()->user();
 
- if ($user->is_admin == 1)  {
-            $products = Product::with('category', 'subCategory')->get();
-        } else {
-            $products = Product::with('category', 'subCategory')
-                        ->where('user_id', auth()->id())
-                        ->get();
-        }
+            $products = Product::with('category', 'subCategory')->userData()->status()->get();
+
 
         if ($html === null) {
             $html = view('product.data-table', compact('products'))->render();
@@ -125,13 +99,9 @@ class ProductController extends BaseController
     {
 
 
-        $user = auth()->user();
 
-        if ($user->is_admin == 1) {
-            $product = Product::findOrFail($id);
-        } else {
-            $product = Product::where('user_id', auth()->id())->findOrFail($id);
-        }
+            $product = Product::userData()->findOrFail($id);
+
 
         return response()->json(['success' => true, 'data' => $product]);
     }
@@ -141,16 +111,10 @@ class ProductController extends BaseController
     {
 
 
-        $user = auth()->user();
-
-        if ($user->is_admin == 1) {
-            $product = Product::findOrFail($id);
-        } else {
-            $product = Product::where('user_id', auth()->id())->findOrFail($id);
-        }
+         $product = Product::userData()->findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+              'name' => 'required|string|max:255|unique:products,name,' . $id . ',id,user_id,' . auth()->id(),
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'required|exists:sub_categories,id',
             'price' => 'required|numeric',
@@ -199,13 +163,9 @@ class ProductController extends BaseController
     {
 
 
-        $user = auth()->user();
 
-        if ($user->is_admin == 1) {
-            $product = Product::findOrFail($id);
-        } else {
-            $product = Product::where('user_id', auth()->id())->findOrFail($id);
-        }
+
+           $product = Product::userData()->findOrFail($id);
 
         if ($product->image) {
             $imagePath = public_path('storage/products/' . $product->getOriginal('image'));

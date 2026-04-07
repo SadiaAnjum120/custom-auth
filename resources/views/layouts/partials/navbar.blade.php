@@ -18,13 +18,27 @@
                 </div>
               </div>
 
+
               <!-- /Search -->
 
               <ul class="navbar-nav flex-row align-items-center ms-md-auto">
                 <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
+                      @if(session()->has('impersonator_id'))
+<li class="nav-item d-flex align-items-center me-3">
+
+
+
+  <a href="{{ route('admin.stop-impersonate') }}"
+   class="btn btn-danger btn-sm ms-2">
+    Stop impersonating
+</a>
+
+</li>
+@endif
                   <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <i class="icon-base ti tabler-language icon-22px text-heading"></i>
                   </a>
+
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                       <a class="dropdown-item" href="javascript:void(0);" data-language="en" data-text-direction="ltr">

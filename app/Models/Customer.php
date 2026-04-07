@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Traits\CommonScopes;
 class Customer extends Model
 {
     use HasFactory;
@@ -17,6 +17,7 @@ class Customer extends Model
           'user_id',
            'is_active',
     ];
+      use CommonScopes;
     public function orders()
 {
     return $this->hasMany(Order::class);

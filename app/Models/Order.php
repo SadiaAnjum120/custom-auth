@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -21,7 +21,11 @@ class Order extends Model
     'due_amount',
     'notes',
 ];
-
+    use CommonScopes;
+    public function scopeAvailable($query)
+    {
+        return $query->where('quantity', '>', 0);
+    }
 
     // ============================
     // RELATIONSHIPS

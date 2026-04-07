@@ -19,13 +19,9 @@ class CustomerController extends BaseController
     {
 
 
-        $user = auth()->user();
 
- if ($user->is_admin == 1) {
-    $customers = Customer::all();
-} else {
-    $customers = Customer::where('user_id', $user->id)->get();
-}
+    $customers = Customer::userData()->get();
+
         return view('customer.index', compact('customers'));
     }
 
@@ -52,13 +48,9 @@ class CustomerController extends BaseController
 }
     private function getLatestCustomer($success = true, $message = 'Customer saved successfully!', $html = null)
     {
-        $user = auth()->user();
 
-            if ($user->is_admin == 1) {
-            $customers = Customer::all();
-        } else {
-            $customers = Customer::where('user_id', $user->id)->get();
-        }
+            $customers = Customer::userData()->get();
+
 
         if ($html === null) {
             $html = view('customer.data-table', compact('customers'))->render();
@@ -75,13 +67,8 @@ class CustomerController extends BaseController
     public function edit($id)
     {
 
-        $user = auth()->user();
 
-        if ($user->is_admin == 1) {
-            $customer = Customer::findOrFail($id);
-        } else {
-            $customer = Customer::where('user_id', $user->id)->findOrFail($id);
-        }
+            $customer = Customer::userData()->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -102,13 +89,9 @@ class CustomerController extends BaseController
             'email'      => 'nullable|email|unique:customers,email,' . $id,
              'is_active' => 'required|in:0,1',
         ]);
-          $user = auth()->user();
 
-           if ($user->is_admin == 1){
-            $customer = Customer::findOrFail($id);
-        } else {
-            $customer = Customer::where('user_id', $user->id)->findOrFail($id);
-        }
+            $customer = Customer::userData()->findOrFail($id);
+
 
 
         $customer->update($request->all());
@@ -121,17 +104,11 @@ class CustomerController extends BaseController
     {
 
 
-        $user = auth()->user();
 
-           if ($user->is_admin == 1) {
-            $customer = Customer::findOrFail($id);
-            $deleted = $customer->delete();
-            $customers = Customer::all();
-        } else {
-            $customer = Customer::where('user_id', $user->id)->findOrFail($id);
-            $deleted = $customer->delete();
-            $customers = Customer::where('user_id', $user->id)->get();
-        }
+    $customer = Customer::userData()->findOrFail($id);
+    $deleted = $customer->delete();
+
+
 
         $html = view('customer.data-table', compact('customers'))->render();
 

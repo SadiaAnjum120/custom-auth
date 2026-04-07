@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Traits\CommonScopes;
 
 class Product extends Model
 {
@@ -21,6 +22,11 @@ class Product extends Model
 
 
     ];
+      use CommonScopes;
+        public function scopeAvailable($query)
+    {
+        return $query->where('quantity', '>', 0);
+    }
      // Relationship with Category
     public function category()
     {

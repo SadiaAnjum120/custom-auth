@@ -22,7 +22,7 @@ class CategoryController extends BaseController
     {
 
 
-        $user = auth()->user();
+
         $categories = Category::userData()->get(); // Scope method se data fetch
 
         return view('category.index', compact('categories'));
@@ -36,24 +36,35 @@ class CategoryController extends BaseController
 
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+         'name' => 'required|string|max:255|unique:categories,name,NULL,id,user_id,' . auth()->id(),
             'is_active' => 'required|in:0,1',
         ]);
 
         $validated['user_id'] = auth()->id();
-        $validated['slug'] = Str::slug($validated['name']);
-
+     $validated['slug'] = $this->generateUniqueSlug($validated['name']);
         $category = Category::create($validated);
 
         return $this->getLatestCategory($category ? true : false, $category ? 'Category created successfully' : 'Category creation failed');
     }
+private function generateUniqueSlug($name)
+{
+    $slug = Str::slug($name);
+    $originalSlug = $slug;
+    $count = 1;
 
+    while (Category::where('slug', $slug)->exists()) {
+        $slug = $originalSlug . '-' . $count;
+        $count++;
+    }
+
+    return $slug;
+}
     // ------------------------------
     // GET LATEST (AJAX TABLE REFRESH)
     // ------------------------------
     private function getLatestCategory($success = true, $message = 'Category saved successfully!', $html = null)
     {
-        $user = auth()->user();
+
 
          $categories = Category::userData()->get(); // Scope method se data fetch
 
@@ -75,7 +86,7 @@ class CategoryController extends BaseController
     {
 
 
-        $user = auth()->user();
+
 
          $category = Category::userData()->findOrFail($id); // Scope method se data fetch
 
@@ -93,17 +104,17 @@ class CategoryController extends BaseController
 
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+          'name' => 'required|string|max:255|unique:categories,name,' . $id . ',id,user_id,' . auth()->id(),
             'is_active' => 'required|in:0,1',
         ]);
 
-        $user = auth()->user();
+
 
             $category = Category::userData()->findOrFail($id); // Scope method se data fetch
 
 
 
-        $validated['slug'] = Str::slug($validated['name']);
+        $validated['slug'] = $this->generateUniqueSlug($validated['name']);
         $updated = $category->update($validated);
 
         return $this->getLatestCategory($updated, $updated ? 'Category updated successfully' : 'Category update failed');
@@ -114,7 +125,7 @@ class CategoryController extends BaseController
     // ------------------------------
     public function destroy($id)
     {
-        $user = auth()->user();
+
 
         $category = Category::userData()->findOrFail($id);
         $deleted = $category->delete();

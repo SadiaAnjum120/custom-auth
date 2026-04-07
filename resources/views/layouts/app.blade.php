@@ -14,7 +14,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Demo: Dashboard - Analytics | Vuexy - Bootstrap Dashboard PRO</title>
+
 
     <meta name="description" content="" />
 
@@ -77,6 +77,7 @@
 
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
+     <title>@yield('title', 'My App')</title> <!-- Ye tab title -->
 
   </head>
 

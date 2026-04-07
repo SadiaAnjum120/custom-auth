@@ -87,4 +87,41 @@ class SuperAdminController extends Controller
             'badge_class' => 'bg-secondary'
         ]);
     }
+    // Impersonate shop
+public function impersonate($id)
+{
+    $admin = auth()->user();
+
+    // safety check
+    if ($admin->role !== 'super_admin') {
+        abort(403, 'Unauthorized');
+    }
+
+    $shop = User::findOrFail($id);
+    // ✅ Only approved shops allowed
+    if ($shop->approval_status !== 'approved') {
+        return redirect()->back()->with('error', 'Only approved shops can be impersonated');
+    }
+
+    // store admin id in session
+    session(['impersonator_id' => $admin->id]);
+
+    // login as shop
+    auth()->login($shop);
+
+    return redirect('/'); // ya shop dashboard
+}
+
+// Stop impersonation
+public function stopImpersonate()
+{
+    $adminId = session('impersonator_id');
+
+    if ($adminId) {
+        auth()->loginUsingId($adminId);
+        session()->forget('impersonator_id');
+    }
+
+    return redirect('/admin/shops');
+}
 }

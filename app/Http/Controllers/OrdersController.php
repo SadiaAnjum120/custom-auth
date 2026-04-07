@@ -29,49 +29,33 @@ class OrdersController extends BaseController
     {
 
 
-        $user = auth()->user();
 
-       if ($user->is_admin == 1) {
-    $categories = Category::where('is_active', 1)
+    $categories = Category::status()->userData()
         ->where(function($query) {
             // 1. Category ke direct products hain
             $query->whereHas('products', function($q) {
-                $q->where('is_active', 1);
+                $q->available()->status();
             })
             // 2. Ya subcategories ke paas products hain
             ->orWhereHas('subcategories.products', function($q){
-                $q->where('is_active', 1);
+                 $q->available()->status();
             });
         })
         ->get();
 
-    $customers = Customer::where('is_active',1)->get();
+    $customers = Customer::status()->userData()->get();
 
     $orders = Order::with(['customer','orderItems.product'])
         ->latest()
         ->get();
-} else {
-    $categories = Category::where('user_id', auth()->id())
-        ->where('is_active', 1)
-        ->where(function($query) {
-            $query->whereHas('products', function($q){
-                $q->where('is_active', 1)->where('quantity','>',0);
-            })
-            ->orWhereHas('subcategories.products', function($q){
-                $q->where('is_active', 1)->where('quantity','>',0);
-            });
-        })
-        ->get();
 
-    $customers = Customer::where('user_id', auth()->id())
-        ->where('is_active',1)
-        ->get();
+    $customers = Customer::status()->userData()->get();
 
     $orders = Order::with(['customer','orderItems.product'])
-        ->where('user_id',auth()->id())
+        ->userData()
         ->latest()
         ->get();
-}
+
         return view('order.index',compact('orders','categories','customers'));
     }
 
@@ -94,7 +78,9 @@ class OrdersController extends BaseController
             'category_id' => $item->category_id,
             'sub_category_id' => $item->sub_category_id,
             'product_id' => $item->product_id,
-            'quantity' => $item->quantity
+            'quantity' => $item->quantity,
+
+
         ];
     });
 
@@ -111,14 +97,12 @@ class OrdersController extends BaseController
   public function getSubCategoriesByCategory($categoryId)
     {
         $query = SubCategory::where('category_id', $categoryId)
-                    ->where('is_active', 1)
+                    ->status()->userData()
                     ->whereHas('products', function($q){
-                        $q->where('quantity','>',0);
+                        $q->available();
                     });
 
-        if (!auth()->user()->is_admin) {
-            $query->where('user_id', auth()->id());
-        }
+
 
         return response()->json($query->get());
     }
@@ -129,12 +113,8 @@ class OrdersController extends BaseController
   public function getProductsBySubCategory($subCategoryId)
     {
         $query = Product::where('sub_category_id',$subCategoryId)
-            ->where('is_active',1)
-            ->where('quantity','>',0); // 🔥 KEY FIX
-
-        if(!auth()->user()->is_admin){
-            $query->where('user_id',auth()->id());
-        }
+            ->status()->userData()
+            ->available(); // 🔥 KEY FIX
 
         return response()->json($query->get());
     }
@@ -374,23 +354,24 @@ class OrdersController extends BaseController
     // ===============================
     // LATEST ORDERS TABLE
     // ===============================
-    private function getLatestOrders($message = 'Order saved successfully!')
-    {
-        $user = auth()->user();
+   private function getLatestOrders($message = 'Order saved successfully!')
+{
+    $orders = Order::with([
+        'customer',
+        'orderItems.product',
+        'orderItems.category',
+        'orderItems.subCategory'
+    ])
+    ->userData()
+    ->latest()
+    ->get();
 
-        $orders = $user->is_admin
-            ? Order::with(['customer', 'orderItems.product', 'orderItems.category', 'orderItems.subCategory'])->latest()->get()
-            : Order::with(['customer', 'orderItems.product', 'orderItems.category', 'orderItems.subCategory'])
-                ->where('user_id', $user->id)
-                ->latest()
-                ->get();
+    $html = view('order.data-table', compact('orders'))->render();
 
-        $html = view('order.data-table', compact('orders'))->render();
-
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'html' => $html
-        ]);
-    }
+    return response()->json([
+        'success' => true,
+        'message' => $message,
+        'html' => $html
+    ]);
+}
 }
